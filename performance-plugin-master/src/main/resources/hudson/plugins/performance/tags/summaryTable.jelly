@@ -1,0 +1,56 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core">
+    <td>
+        ${it.samplesCount()}
+        <sup class="${h.ifThenElse(it.getSamplesCountDiff()>=0,'green','red')}">
+            ${h.ifThenElse(it.getSamplesCountDiff()>=0,'+','')}${it.getSamplesCountDiff()}
+        </sup>
+    </td>
+
+    <td>
+        ${it.getAverage()}
+        <sup class="${h.ifThenElse(it.getAverageDiff()>0,'red','green')}">
+            ${h.ifThenElse(it.getAverageDiff()>0,'+','')}${it.getAverageDiff()}
+        </sup>
+    </td>
+
+
+    <j:set var="percentiles" value="${it.getPercentilesValues()}"/>
+    <j:set var="percentilesDiff" value="${it.getPercentilesDiffValues()}"/>
+    <j:forEach var="entry" items="${percentiles}">
+        <td>
+            ${entry.getValue()}
+            <j:set var="diff" value="${percentilesDiff.get(entry.getKey())}"/>
+            <sup class="${h.ifThenElse(diff > 0,'red','green')}">
+                ${h.ifThenElse(diff > 0,'+','')}${diff}
+            </sup>
+        </td>
+    </j:forEach>
+
+    <td>
+        ${it.getHttpCode()}
+        <sup>
+            ${it.getLastBuildHttpCodeIfChanged()}
+        </sup>
+    </td>
+
+    <td>
+        ${it.errorPercent()} %
+        <sup class="${h.ifThenElse(it.getErrorPercentDiff()>0,'red','green')}">
+            ${h.ifThenElse(it.getErrorPercentDiff()>0,'+','')}${it.getErrorPercentDiff()} %
+        </sup>
+    </td>
+
+    <td>
+    	${it.getAverageSizeInKb()}
+    	<sup class="${h.ifThenElse(it.getAverageSizeInKbDiff()>0,'red','green')}">
+            ${h.ifThenElse(it.getAverageSizeInKbDiff()>0,'+','')}${it.getAverageSizeInKbDiff()}
+        </sup>
+    </td>
+    <td>
+    	${it.getTotalTrafficInKb()}
+    	<sup class="${h.ifThenElse(it.getTotalTrafficInKbDiff()>0,'red','green')}">
+            ${h.ifThenElse(it.getTotalTrafficInKbDiff()>0,'+','')}${it.getTotalTrafficInKbDiff()}
+        </sup>
+    </td>
+</j:jelly>

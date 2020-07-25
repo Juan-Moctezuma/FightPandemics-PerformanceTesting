@@ -1,0 +1,18 @@
+execution:
+- concurrency: 2
+  ramp-up: 5s
+  hold-for: 5s
+  scenario: quick-test
+  executor: nose
+
+scenarios:
+  quick-test:
+    retrieve-resources: false
+    requests:
+    - url: http://blazedemo.com/
+      label: index
+    
+reporting:
+- module: passfail
+  criteria:
+  - hits>0

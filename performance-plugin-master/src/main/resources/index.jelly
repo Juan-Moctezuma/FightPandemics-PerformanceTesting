@@ -1,0 +1,12 @@
+<?jelly escape-by-default='true'?>
+<!--
+  This view is used to render the plugin list page.
+
+  Since we don't really have anything dynamic here, let's just use static HTML. 
+-->
+<div>
+This plugin allows tracking performance KPIs, based on results read from popular testing tools (
+<a href="https://jmeter.apache.org/">Apache JMeter</a>,
+<a href="https://junit.org/junit5/">JUnit</a>,
+<a href="http://gettaurus.org/">Taurus</a>). 
+</div>
