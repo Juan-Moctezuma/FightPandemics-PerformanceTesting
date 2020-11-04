@@ -34,6 +34,8 @@ export default function (data) {
         "Duration Assertion": (r) => {
           return r.timings.duration <= 360;
         },
+		"Size Assertion": (r) => {
+		  return r.body.length == 3485;
       });
 
       url = "https://staging.fightpandemics.work/auth/login";
@@ -57,6 +59,8 @@ export default function (data) {
         "Duration Assertion": (r) => {
           return r.timings.duration <= 360;
         },
+		"Size Assertion": (r) => {
+		  return r.body.length == 3485;
       });
     }
   }
