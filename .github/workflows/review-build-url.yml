@@ -9,15 +9,9 @@ jobs:
     name: Branch Name
     steps:
       - uses: actions/checkout@v2
-      - id: get-branch-name-sanitized
-        name: Sanitize branch name
-        shell: bash
-        run: echo "::set-output name=branch::$(jq --raw-output .pull_request.head.ref "$GITHUB_EVENT_PATH" | tr -cd '[a-zA-Z0-9]-' | cut -b 1-40)"
-      - name: Post Review Build URL
-        if: startsWith(steps.get-branch-name-sanitized.outputs.branch, 'feature')
-        uses: unsplash/comment-on-pr@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          msg: "Branch name is correct"
-          check_for_duplicate_msg: true
+          branch_pattern: 'feature'
+          comment_for_invalid_branch_name: 'This branch name is not following the standards!'
+          fail_if_invalid_branch_name: 'true'
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
