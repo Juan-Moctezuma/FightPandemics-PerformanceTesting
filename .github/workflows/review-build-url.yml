@@ -4,9 +4,9 @@ on:
   pull_request:
     types: [opened]
 jobs:
-  example:
-    name: Post to PR
+  branch_name:
     runs-on: ubuntu-latest
+    name: Branch Name
     steps:
       - uses: actions/checkout@v2
       - id: get-branch-name-sanitized
