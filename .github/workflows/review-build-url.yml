@@ -14,7 +14,8 @@ jobs:
         shell: bash
         run: echo "::set-output name=branch::$(jq --raw-output .pull_request.head.ref "$GITHUB_EVENT_PATH" | tr -cd '[a-zA-Z0-9]-' | cut -b 1-40)"
       - name: Post Review Build URL
-        if: startsWith(steps.get-branch-name-sanitized.outputs.branch, 'feature') 
+        if: startsWith(steps.get-branch-name-sanitized.outputs.branch, 'feature')
+        uses: unsplash/comment-on-pr@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
