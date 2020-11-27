@@ -1,0 +1,119 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Creates an EC2 instance for performance testing."
+
+Parameters:
+  KeyPair:
+    Description: Select an existing key pair to be used for this EC2 instance.
+    Type: AWS::EC2::KeyPair::KeyName
+  InstanceName:
+    Description: Enter the name of the EC2 instance.
+    Type: String
+    Default: FightPandemics-K6
+  InstanceProfileName:
+    Description: Enter the name of the Instance Profile Name.
+    Type: String
+    Default: AWSSessionManagerInstanceProfile
+  InstanceType:
+    Description: Select an EC2 instance type
+    Type: String
+    Default: m4.xlarge
+    AllowedValues: [t2.nano, t2.micro, t2.small, t2.medium, t2.large, t2.xlarge, t2.2xlarge, t3.nano, t3.micro, t3.small, t3.medium, t3.large, t3.xlarge, t3.2xlarge, m4.large, m4.xlarge, m4.2xlarge, m4.4xlarge, m4.10xlarge, m5.large, m5.xlarge, m5.2xlarge, m5.4xlarge, c5.large, c5.xlarge, c5.2xlarge, c5.4xlarge, c5.9xlarge, g3.8xlarge, r5.large, r5.xlarge, r5.2xlarge, r5.4xlarge, r3.12xlarge, i3.xlarge, i3.2xlarge, i3.4xlarge, i3.8xlarge, d2.xlarge, d2.2xlarge, d2.4xlarge, d2.8xlarge]
+  LatestAmiId:
+    Type:  'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
+    Default: '/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2'
+  PublicSubnet:
+    Description: Select an existing public subnet for the EC2 instance.
+    Type: String
+    Default: 'subnet-06403508'
+  VpcId:
+    Description: Select an existing VPC Id for the EC2 instance.
+    Type: String
+    Default: 'vpc-6bcb0416'
+  OrganizationName:
+    Description: Name of the organization.
+    Type: String
+    Default: "FightPandemics"
+  UseCase:
+    Description: What is the instance used for.
+    Type: String
+    AllowedValues: [Development, Test, Production]
+    
+Resources:
+  EC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      IamInstanceProfile: !Ref InstanceProfileName
+      InstanceType: !Ref InstanceType
+      KeyName: !Ref KeyPair
+      ImageId: !Ref LatestAmiId
+      BlockDeviceMappings: 
+        - DeviceName: /dev/xvda
+          Ebs: 
+            VolumeType: gp2
+            VolumeSize: '200'
+            DeleteOnTermination: "true"
+      NetworkInterfaces: 
+        - AssociatePublicIpAddress: "true"
+          DeviceIndex: "0"
+          GroupSet:
+          - !GetAtt "EC2SecurityGroupWithoutIngress.GroupId"
+          SubnetId: !Ref PublicSubnet
+      UserData:
+        Fn::Base64:
+          !Sub |
+            #!/bin/bash
+            sudo yum update -y
+            #Install SSM Agent
+            cd /tmp
+            sudo yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
+            sudo systemctl enable amazon-ssm-agent
+            sudo systemctl start amazon-ssm-agent
+            # Install Git
+            cd /tmp
+            sudo yum install -y git
+            # Install K6
+            cd /tmp
+            sudo wget https://bintray.com/loadimpact/rpm/rpm -O bintray-loadimpact-rpm.repo
+            sudo mv bintray-loadimpact-rpm.repo /etc/yum.repos.d/
+            sudo yum install -y k6
+      Tags:
+        -
+          Key: "Name"
+          Value: !Ref InstanceName
+        -
+          Key: "Organization"
+          Value: !Ref OrganizationName
+        -
+          Key: "UseCase"
+          Value: !Ref UseCase
+    DependsOn: EC2SecurityGroupWithoutIngress
+
+  EC2SecurityGroupWithoutIngress:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Limits security group ingress traffic
+      SecurityGroupIngress:
+      - CidrIp: 172.0.0.1/32
+        IpProtocol: "-1"
+      VpcId: !Ref VpcId
+        
+Outputs:
+  InstanceId:
+    Description: InstanceId of this EC2 instance.
+    Value: !Ref EC2Instance
+  AZ:
+    Description: Availability Zone of this EC2 instance.
+    Value: !GetAtt [EC2Instance, AvailabilityZone]
+  PublicDNS:
+    Description: Public DNSName of this EC2 instance.
+    Value: !GetAtt [EC2Instance, PublicDnsName]
+  PublicIP:
+    Description: Public IP address of this EC2 instance.
+    Value: !GetAtt [EC2Instance, PublicIp]
+  PrivateDNS:
+    Description: Private DNSName of this EC2 instance.
+    Value: !GetAtt [EC2Instance, PrivateDnsName]
+  PrivateIP:
+    Description: Private IP address of this EC2 instance.
+    Value: !GetAtt [EC2Instance, PrivateIp]
