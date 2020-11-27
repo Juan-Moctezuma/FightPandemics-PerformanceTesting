@@ -17,4 +17,6 @@ jobs:
         uses: unsplash/comment-on-pr@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
+        with:
+          msg: "Sanitize branch name"
+          check_for_duplicate_msg: true
